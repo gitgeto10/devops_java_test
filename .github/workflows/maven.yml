@@ -16,8 +16,8 @@ jobs:
       mysql:
         image: mysql:8.0
         env:
-          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}  # Vous pouvez le laisser vide ici pour ne pas utiliser de secrets
-          MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}          # Utiliser les variables locales directement, pas de secrets ici
+          MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}  
+          MYSQL_DATABASE: ${MYSQL_DATABASE}
         ports:
           - 3306:3306
         options: --health-cmd="mysqladmin ping --silent" --health-interval=10s --health-timeout=5s --health-retries=5
