@@ -1,12 +1,12 @@
-## YAML Template.
----
 name: Java CI with Maven and MySQL
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
   pull_request:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   build-test:
@@ -16,8 +16,8 @@ jobs:
       mysql:
         image: mysql:8.0
         env:
-          MYSQL_ALLOW_EMPTY_PASSWORD: yes
-          MYSQL_DATABASE: devops_db
+          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}  # Vous pouvez le laisser vide ici pour ne pas utiliser de secrets
+          MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}          # Utiliser les variables locales directement, pas de secrets ici
         ports:
           - 3306:3306
         options: --health-cmd="mysqladmin ping --silent" --health-interval=10s --health-timeout=5s --health-retries=5
@@ -32,10 +32,15 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
+    - name: Load environment variables from .env
+      run: |
+        export $(cat .env | xargs)
+        echo "Loaded environment variables from .env"
+
     - name: Wait for MySQL to be ready
       run: |
         for i in {1..30}; do
-          if mysql -h 127.0.0.1 -P 3306 -u root -e "SELECT 1"; then
+          if mysql -h 127.0.0.1 -P 3306 -u $DB_USER -p$DB_PASS -e "SELECT 1"; then
             break
           fi
           sleep 2
@@ -43,7 +48,13 @@ jobs:
 
     - name: Create schema
       run: |
-        mysql -h 127.0.0.1 -P 3306 -u root devops_db < schema.sql
+        if [ -z "$DB_PASS" ]; then
+          # Si le mot de passe est vide, ne pas utiliser l'option -p
+          mysql -h 127.0.0.1 -P 3306 -u $DB_USER $MYSQL_DATABASE < schema.sql
+        else
+          # Si un mot de passe est défini, l'utiliser
+          mysql -h 127.0.0.1 -P 3306 -u $DB_USER -p$DB_PASS $MYSQL_DATABASE < schema.sql
+        fi
 
     - name: Build with Maven
       run: mvn -B package --file pom.xml
@@ -51,7 +62,6 @@ jobs:
     - name: Run tests
       run: mvn test
       env:
-        DB_URL: jdbc:mysql://localhost:3306/devops_db
-        DB_USER: root
-        DB_PASS: ""
-
+        DB_URL: $DB_URL
+        DB_USER: $DB_USER
+        DB_PASS: $DB_PASS
