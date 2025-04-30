@@ -1,12 +1,12 @@
-## YAML Template.
----
 name: Java CI with Maven and MySQL
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
   pull_request:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   build-test:
@@ -15,9 +15,8 @@ jobs:
     services:
       mysql:
         image: mysql:8.0
-        env:
-          MYSQL_ALLOW_EMPTY_PASSWORD: yes
-          MYSQL_DATABASE: devops_db
+        env_file:
+          - .env  # Charger le fichier .env avec les variables d'environnement
         ports:
           - 3306:3306
         options: --health-cmd="mysqladmin ping --silent" --health-interval=10s --health-timeout=5s --health-retries=5
@@ -32,10 +31,14 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
+    - name: Load environment variables from .env
+      run: |
+        export $(cat .env | xargs)
+      
     - name: Wait for MySQL to be ready
       run: |
         for i in {1..30}; do
-          if mysql -h 127.0.0.1 -P 3306 -u root -e "SELECT 1"; then
+          if mysql -h 127.0.0.1 -P 3306 -u $DB_USER -p$DB_PASS -e "SELECT 1"; then
             break
           fi
           sleep 2
@@ -43,7 +46,7 @@ jobs:
 
     - name: Create schema
       run: |
-        mysql -h 127.0.0.1 -P 3306 -u root devops_db < schema.sql
+        mysql -h 127.0.0.1 -P 3306 -u $DB_USER -p$DB_PASS $MYSQL_DATABASE < schema.sql
 
     - name: Build with Maven
       run: mvn -B package --file pom.xml
@@ -51,7 +54,6 @@ jobs:
     - name: Run tests
       run: mvn test
       env:
-        DB_URL: jdbc:mysql://localhost:3306/devops_db
-        DB_USER: root
-        DB_PASS: ""
-
+        DB_URL: $DB_URL
+        DB_USER: $DB_USER
+        DB_PASS: $DB_PASS
