@@ -49,10 +49,10 @@ jobs:
     - name: Create schema
       run: |
         if [ -z "$DB_PASS" ]; then
-          # Si le mot de passe est vide, ne pas utiliser l'option -p
+          # Si DB_PASS est vide, on exécute la commande sans mot de passe
           mysql -h 127.0.0.1 -P 3306 -u $DB_USER $MYSQL_DATABASE < schema.sql
         else
-          # Si un mot de passe est défini, l'utiliser
+          # Si DB_PASS est défini, on l'inclut dans la commande
           mysql -h 127.0.0.1 -P 3306 -u $DB_USER -p$DB_PASS $MYSQL_DATABASE < schema.sql
         fi
 
