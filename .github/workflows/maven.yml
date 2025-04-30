@@ -16,8 +16,8 @@ jobs:
       mysql:
         image: mysql:8.0
         env:
-          MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-          MYSQL_DATABASE: ${MYSQL_DATABASE}
+          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+          MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
         ports:
           - 3306:3306
         options: --health-cmd="mysqladmin ping --silent" --health-interval=10s --health-timeout=5s --health-retries=5
@@ -37,6 +37,12 @@ jobs:
         export $(cat .env | xargs)
         echo "Loaded environment variables from .env"
 
+    - name: Check environment variables
+      run: |
+        echo "DB_USER: $DB_USER"
+        echo "DB_PASS: $DB_PASS"
+        echo "MYSQL_DATABASE: $MYSQL_DATABASE"
+
     - name: Wait for MySQL to be ready
       run: |
         for i in {1..30}; do
@@ -48,7 +54,13 @@ jobs:
 
     - name: Create schema
       run: |
-        mysql -h 127.0.0.1 -P 3306 -u $DB_USER -p$DB_PASS $MYSQL_DATABASE < schema.sql
+        if [ -z "$DB_PASS" ]; then
+          # Si le mot de passe est vide, ne pas utiliser l'option -p
+          mysql -h 127.0.0.1 -P 3306 -u $DB_USER $MYSQL_DATABASE < schema.sql
+        else
+          # Si un mot de passe est défini, l'utiliser
+          mysql -h 127.0.0.1 -P 3306 -u $DB_USER -p$DB_PASS $MYSQL_DATABASE < schema.sql
+        fi
 
     - name: Build with Maven
       run: mvn -B package --file pom.xml
