@@ -56,6 +56,12 @@ jobs:
 
         mysql -h 127.0.0.1 -P 3306 -u root -proot devops_java < schema_facture.sql
 
+    - name: Insert user for facture tests
+      run: |
+        echo "INSERT INTO users (id, name, email) VALUES (1, 'Jamila Dahi', 'jda@gk.mt');" > insert_user.sql
+        mysql -h 127.0.0.1 -P 3306 -u root -proot devops_java < insert_user.sql
+
+
 
     - name: Build with Maven
       run: mvn -B package --file pom.xml
