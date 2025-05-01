@@ -39,15 +39,23 @@ jobs:
           sleep 2
         done
 
-    - name: Create Facture Table
+    - name: Create Users and Factures Tables
       run: |
-        echo "CREATE TABLE IF NOT EXISTS factures (
+        echo "CREATE TABLE IF NOT EXISTS users (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          name VARCHAR(255) NOT NULL,
+          email VARCHAR(255) NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS factures (
           id INT AUTO_INCREMENT PRIMARY KEY,
           user_id INT NOT NULL,
           total DECIMAL(10,2) NOT NULL,
           FOREIGN KEY (user_id) REFERENCES users(id)
         );" > schema_facture.sql
+
         mysql -h 127.0.0.1 -P 3306 -u root -proot devops_java < schema_facture.sql
+
 
     - name: Build with Maven
       run: mvn -B package --file pom.xml
