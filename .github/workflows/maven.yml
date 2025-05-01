@@ -40,7 +40,7 @@ jobs:
     - name: Wait for MySQL to be ready
       run: |
         if [ -z "$DB_PASS" ]; then
-          # Si DB_PASS est vide, on exécute la commande sans mot de passe
+          # Si DB_PASS est vide, on n'inclut pas le mot de passe dans la commande
           mysql -h 127.0.0.1 -P 3306 -u $DB_USER -e "SELECT 1"
         else
           # Si DB_PASS est défini, on l'inclut dans la commande
@@ -50,7 +50,7 @@ jobs:
     - name: Create schema
       run: |
         if [ -z "$DB_PASS" ]; then
-          # Si DB_PASS est vide, on exécute la commande sans mot de passe
+          # Si DB_PASS est vide, on n'inclut pas le mot de passe dans la commande
           mysql -h 127.0.0.1 -P 3306 -u $DB_USER $MYSQL_DATABASE < schema.sql
         else
           # Si DB_PASS est défini, on l'inclut dans la commande
