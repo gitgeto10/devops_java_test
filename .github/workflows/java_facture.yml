@@ -1,13 +1,13 @@
-name: Java CI for FactureDAO
+name: Java Facture Test
 
 on:
   push:
-    branches: [ main ]
+    branches: [ facture ]
   pull_request:
-    branches: [ main ]
+    branches: [ facture ]
 
 jobs:
-  build-test:
+  build-test-facture:
     runs-on: ubuntu-latest
 
     services:
@@ -18,11 +18,7 @@ jobs:
           MYSQL_DATABASE: devops_java
         ports:
           - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping --silent"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
+        options: --health-cmd="mysqladmin ping --silent" --health-interval=10s --health-timeout=5s --health-retries=5
 
     steps:
     - name: Checkout code
@@ -43,17 +39,25 @@ jobs:
           sleep 2
         done
 
-    - name: Create Facture table
+    - name: Create Facture Table
       run: |
+        echo "CREATE TABLE IF NOT EXISTS factures (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          user_id INT NOT NULL,
+          total DECIMAL(10,2) NOT NULL,
+          FOREIGN KEY (user_id) REFERENCES users(id)
+        );" > schema_facture.sql
         mysql -h 127.0.0.1 -P 3306 -u root -proot devops_java < schema_facture.sql
 
     - name: Build with Maven
       run: mvn -B package --file pom.xml
 
-    - name: Run FactureDAOTest only
-      run: mvn test -Dtest=FactureDAOTest
+    - name: Run only FactureDAOTest
+      run: mvn -B test -Dtest=FactureDAOTest
       env:
         DB_URL: jdbc:mysql://localhost:3306/devops_java
         DB_USER: root
         DB_PASSWORD: root
+
+
 
