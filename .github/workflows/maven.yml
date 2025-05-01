@@ -2,11 +2,9 @@ name: Java CI with Maven and MySQL
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   pull_request:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
   build-test:
@@ -16,8 +14,8 @@ jobs:
       mysql:
         image: mysql:8.0
         env:
-          MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-          MYSQL_DATABASE: ${MYSQL_DATABASE}
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}  # Utiliser l'environnement dynamique ou secrets si nécessaire
         ports:
           - 3306:3306
         options: --health-cmd="mysqladmin ping --silent" --health-interval=10s --health-timeout=5s --health-retries=5
@@ -34,28 +32,25 @@ jobs:
 
     - name: Load environment variables from .env
       run: |
-        export $(cat .env | xargs)
-        echo "Loaded environment variables from .env"
+        if [ -f .env ]; then
+          export $(cat .env | xargs)
+          echo "Loaded environment variables from .env"
+        else
+          echo ".env file not found"
+        fi
 
     - name: Wait for MySQL to be ready
       run: |
-        if [ -z "$DB_PASS" ]; then
-          # Si DB_PASS est vide, on n'inclut pas le mot de passe dans la commande
-          mysql -h 127.0.0.1 -P 3306 -u $DB_USER -e "SELECT 1"
-        else
-          # Si DB_PASS est défini, on l'inclut dans la commande
-          mysql -h 127.0.0.1 -P 3306 -u $DB_USER -p$DB_PASS -e "SELECT 1"
-        fi
+        for i in {1..30}; do
+          if mysql -h 127.0.0.1 -P 3306 -u $DB_USER -p$DB_PASS -e "SELECT 1"; then
+            break
+          fi
+          sleep 2
+        done
 
     - name: Create schema
       run: |
-        if [ -z "$DB_PASS" ]; then
-          # Si DB_PASS est vide, on n'inclut pas le mot de passe dans la commande
-          mysql -h 127.0.0.1 -P 3306 -u $DB_USER $MYSQL_DATABASE < schema.sql
-        else
-          # Si DB_PASS est défini, on l'inclut dans la commande
-          mysql -h 127.0.0.1 -P 3306 -u $DB_USER -p$DB_PASS $MYSQL_DATABASE < schema.sql
-        fi
+        mysql -h 127.0.0.1 -P 3306 -u $DB_USER -p$DB_PASS $MYSQL_DATABASE < schema.sql
 
     - name: Build with Maven
       run: mvn -B package --file pom.xml
