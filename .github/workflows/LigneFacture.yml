@@ -45,7 +45,16 @@ jobs:
           fi
           echo "schema.sql content:"
           cat schema.sql
-
+      - name: Wait for MySQL to be ready
+        run: |
+          for i in {1..30}; do
+            if mysql -h 127.0.0.1 -u root -proot -e "SELECT 1" > /dev/null 2>&1; then
+              echo " MySQL is up!"
+              break
+            fi
+            echo " Waiting for MySQL..."
+            sleep 2
+          done
       - name: Initialize database for lignefacture
         run: |
             mysql -h 127.0.0.1 -u root -proot devops_db < schema.sql
