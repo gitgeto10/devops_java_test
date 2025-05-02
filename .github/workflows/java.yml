@@ -39,7 +39,7 @@ jobs:
 
     - name: Wait for MySQL to be ready
       run: |
-        for i in {1..30}; do
+        for i in {1..60}; do  # Augmenter à 60 secondes
           if mysqladmin ping -h 127.0.0.1 -p123456789yassmine --silent; then
             echo "MySQL is ready!"
             break
@@ -52,8 +52,12 @@ jobs:
       run: |
         mysql -h 127.0.0.1 -P 3306 -u root -p123456789yassmine devops_db < schema_panier.sql
 
+    - name: Check if tables are created
+      run: |
+        mysql -h 127.0.0.1 -P 3306 -u root -p123456789yassmine -e "SHOW TABLES IN devops_db;"
+
     - name: Build with Maven
       run: mvn -B package --file pom.xml
 
     - name: Run PanierDAOTest
-      run: mvn -Dtest=PanierDAOTest test
+      run: mvn -X -Dtest=PanierDAOTest test
