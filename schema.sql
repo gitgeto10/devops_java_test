@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS lignefacture (
 -- Insérer un utilisateur pour test
 INSERT INTO users (name, email) VALUES ('Jamila Dahi', 'jda@gk.mt');
 
-INSERT INTO factures (id, montant) VALUES (1, 1000.0);
+INSERT INTO factures (id,user_id ,total) VALUES (1,1, 1000.0);
 
 INSERT INTO lignefacture (id, id_facture, quantite, prix_unitaire) VALUES (1, 1, 3, 300.0);
 
