@@ -48,10 +48,10 @@ jobs:
 
       - name: Initialize database for lignefacture
         run: |
-          mysql -h 127.0.0.1 -u root -p1234 devops_db < schema.sql
-          mysql -h 127.0.0.1 -u root -p1234 devops_db -e "SHOW TABLES;" | grep users || { echo "Error: users table not found"; exit 1; }
-          mysql -h 127.0.0.1 -u root -p1234 devops_db -e "SHOW TABLES;" | grep factures || { echo "Error: factures table not found"; exit 1; }
-          mysql -h 127.0.0.1 -u root -p1234 devops_db -e "SHOW TABLES;" | grep lignefacture || { echo "Error: lignefacture table not found"; exit 1; }
+          mysql -h 127.0.0.1 -u root -proot devops_db < schema.sql
+          mysql -h 127.0.0.1 -u root -proot devops_db -e "SHOW TABLES;" | grep users || { echo "Error: users table not found"; exit 1; }
+          mysql -h 127.0.0.1 -u root -proot devops_db -e "SHOW TABLES;" | grep factures || { echo "Error: factures table not found"; exit 1; }
+          mysql -h 127.0.0.1 -u root -proot devops_db -e "SHOW TABLES;" | grep lignefacture || { echo "Error: lignefacture table not found"; exit 1; }
 
       - name: Build and test only lignefacture classes
         run: mvn --batch-mode clean test -Dtest=LigneFactureDAOTest
