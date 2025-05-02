@@ -1,94 +1,96 @@
-name: Java Facture Test
+name: Java CI with Maven
 
 on:
   push:
-    branches: [ lignefacture ]
+    branches:
+      - lignefacture
   pull_request:
-    branches: [ lignefacture ]
+    branches:
+      - main
 
 jobs:
-  build-test-facture:
+  test:
     runs-on: ubuntu-latest
 
     services:
       mysql:
         image: mysql:8.0
         env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: devops_java
+          MYSQL_ROOT_PASSWORD: 1234
+          MYSQL_DATABASE: devops_db
         ports:
           - 3306:3306
-        options: --health-cmd="mysqladmin ping --silent" --health-interval=10s --health-timeout=5s --health-retries=5
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up JDK 11
-      uses: actions/setup-java@v3
-      with:
-        java-version: '11'
-        distribution: 'temurin'
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          java-version: '11'
+          distribution: 'temurin'
 
-    - name: Wait for MySQL to be ready
-      run: |
-        for i in {1..30}; do
-          if mysql -h 127.0.0.1 -P 3306 -u root -proot -e "SELECT 1"; then
-            break
-          fi
-          sleep 2
-        done
+      - name: Cache Maven dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: maven-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            maven-${{ runner.os }}-
 
-    - name: Create all required tables
-      run: |
-        cat <<EOF > schema_facture.sql
-        CREATE TABLE IF NOT EXISTS users (
+      - name: Install dependencies
+        run: mvn install -DskipTests
+
+      - name: Wait for MySQL to be ready
+        run: |
+          echo "Waiting for MySQL to be ready..."
+          for i in {1..30}; do
+            if mysqladmin ping -h 127.0.0.1 -P 3306 -u root -p1234 --silent; then
+              echo "MySQL is ready!"
+              break
+            fi
+            echo "MySQL not ready yet, waiting..."
+            sleep 2
+          done
+
+      - name: Create necessary tables
+        run: |
+          mysql -h 127.0.0.1 -P 3306 -u root -p1234 devops_db -e "
+          CREATE TABLE IF NOT EXISTS article (
           id INT AUTO_INCREMENT PRIMARY KEY,
-          name VARCHAR(255) NOT NULL,
-          email VARCHAR(255) NOT NULL
-        );
-
-        CREATE TABLE IF NOT EXISTS factures (
+          ref VARCHAR(50) NOT NULL,
+          nom VARCHAR(255) NOT NULL,
+          prixUnitaire DECIMAL(10,2) NOT NULL,
+          qte INT NOT NULL
+          );
+          CREATE TABLE IF NOT EXISTS factures (
           id INT AUTO_INCREMENT PRIMARY KEY,
           user_id INT NOT NULL,
-          total DECIMAL(10,2) NOT NULL,
-          FOREIGN KEY (user_id) REFERENCES users(id)
-        );
+          total DECIMAL(10,2) NOT NULL
+          );
+          CREATE TABLE IF NOT EXISTS lignefacture (
+          id INT PRIMARY KEY AUTO_INCREMENT,
+          id_facture INT NOT NULL,
+          id_article INT NOT NULL, 
+          quantity INT NOT NULL,
+          sub_total DECIMAL(10,2) NOT NULL, 
+          FOREIGN KEY (id_facture) REFERENCES factures(id),
+          FOREIGN KEY (id_article) REFERENCES article(id)
+          );
+          "
 
-        CREATE TABLE IF NOT EXISTS article (
-          id INT AUTO_INCREMENT PRIMARY KEY,
-          nom VARCHAR(255) NOT NULL,
-          prix DECIMAL(10,2) NOT NULL
-        );
+      - name: Configure database connection
+        run: |
+          echo "Setting up database connection"
+          echo "DB_URL=jdbc:mysql://127.0.0.1:3306/devops_db" >> .env
+          echo "DB_USER=root" >> .env
+          echo "DB_PASSWORD=1234" >> .env
 
-        CREATE TABLE IF NOT EXISTS lignefacture (
-          id INT AUTO_INCREMENT PRIMARY KEY,
-          facture_id INT NOT NULL,
-          article_id INT NOT NULL,
-          quantite INT NOT NULL,
-          FOREIGN KEY (facture_id) REFERENCES factures(id),
-          FOREIGN KEY (article_id) REFERENCES article(id)
-        );
-        EOF
-
-        mysql -h 127.0.0.1 -P 3306 -u root -proot devops_java < schema_facture.sql
-
-    - name: Insert data for tests
-      run: |
-        cat <<EOF > insert_data.sql
-        INSERT INTO users (id, name, email) VALUES (1, 'Jamila Dahi', 'jda@gk.mt');
-        INSERT INTO factures (id, user_id, total) VALUES (1, 1, 100.00);
-        INSERT INTO article (id, nom, prix) VALUES (1, 'Stylo', 10.00);
-        EOF
-
-        mysql -h 127.0.0.1 -P 3306 -u root -proot devops_java < insert_data.sql
-
-    - name: Build with Maven
-      run: mvn -B package --file pom.xml
-
-    - name: Run DAO tests for Facture and LigneFacture
-      run: mvn -B test -Dtest=LigneFactureDAOTest
-      env:
-        DB_URL: jdbc:mysql://localhost:3306/devops_java
-        DB_USER: root
-        DB_PASSWORD: root
+      - name: Run JUnit tests
+        run: mvn test
