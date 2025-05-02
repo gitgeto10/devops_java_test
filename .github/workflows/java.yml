@@ -25,3 +25,56 @@ jobs:
 
     - name: Run tests
       run: mvn test
+name: Java CI with Maven - Panier Tests
+
+on:
+  push:
+    branches: [ panier ]
+  pull_request:
+    branches: [ panier ]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_DATABASE: devops_db
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping --silent" --health-interval=10s --health-timeout=5s --health-retries=5
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    run: |
+        echo "Waiting for MySQL to be ready..."
+        sleep 30
+
+    - name: Create schema
+      run: |
+        mysql -h 127.0.0.1 -P 3306 -u root devops_db < schema_panier.sql
+
+    - name: Build with Maven
+      run: mvn -B package --file pom.xml
+      
+    - name: Run UserDAOTest.java
+      run: mvn -B test -Dtest=UserDAOTest
+
+    - name: Run tests
+      run: mvn test
+      env:
+        DB_URL: jdbc:mysql://localhost:3306/devops_db
+        DB_USER: root
+        DB_PASS: "123456789yassmine"
+
