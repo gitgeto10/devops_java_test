@@ -7,33 +7,6 @@ on:
     branches: [ panier ]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-
-    - name: Set up JDK 17
-      uses: actions/setup-java@v3
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-
-    - name: Build with Maven
-      run: mvn -B package --file pom.xml
-
-    - name: Run tests
-      run: mvn test
-name: Java CI with Maven - Panier Tests
-
-on:
-  push:
-    branches: [ panier ]
-  pull_request:
-    branches: [ panier ]
-
-jobs:
   build-test:
     runs-on: ubuntu-latest
 
@@ -68,8 +41,6 @@ jobs:
     - name: Build with Maven
       run: mvn -B package --file pom.xml
       
-    - name: Run UserDAOTest.java
-      run: mvn -B test -Dtest=UserDAOTest
 
     - name: Run tests
       run: mvn test
