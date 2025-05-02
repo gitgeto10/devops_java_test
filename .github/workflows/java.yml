@@ -8,7 +8,6 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     services:
@@ -17,10 +16,6 @@ jobs:
         env:
           MYSQL_ROOT_PASSWORD: 123456789yassmine
           MYSQL_DATABASE: devops_db
-          MYSQL_USER: root
-          MYSQL_PASSWORD: 123456789yassmine
-        ports:
-          - 3306:3306
         options: >-
           --health-cmd="mysqladmin ping -h 127.0.0.1 -p123456789yassmine"
           --health-interval=10s
@@ -54,10 +49,9 @@ jobs:
     - name: Create tables from schema
       run: |
         mysql -h 127.0.0.1 -P 3306 -u root -p123456789yassmine devops_db < schema_panier.sql
-        
 
     - name: Build with Maven
       run: mvn -B package --file pom.xml
 
-    - name: Run specific tests (PanierDAOTest )
+    - name: Run PanierDAOTest
       run: mvn -Dtest=PanierDAOTest test
