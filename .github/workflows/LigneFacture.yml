@@ -1,13 +1,15 @@
-name: Java Facture Test
+name: Java CI LigneFacture
 
 on:
   push:
-    branches: [ lignefacture ]
+    branches:
+      - lignefacture
   pull_request:
-    branches: [ lignefacture ]
+    branches:
+      - main
 
 jobs:
-  build-test-facture:
+  build_and_test_facture:
     runs-on: ubuntu-latest
 
     services:
@@ -15,80 +17,59 @@ jobs:
         image: mysql:8.0
         env:
           MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: devops_java
+          MYSQL_DATABASE: devops_db
         ports:
           - 3306:3306
-        options: --health-cmd="mysqladmin ping --silent" --health-interval=10s --health-timeout=5s --health-retries=5
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Set up JDK 11
-      uses: actions/setup-java@v3
-      with:
-        java-version: '11'
-        distribution: 'temurin'
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+          cache: maven
 
-    - name: Wait for MySQL to be ready
-      run: |
-        for i in {1..30}; do
-          if mysql -h 127.0.0.1 -P 3306 -u root -proot -e "SELECT 1"; then
-            break
+      - name: Verify schema.sql exists
+        run: |
+          if [ ! -f schema.sql ]; then
+            echo "Error: schema.sql not found"
+            exit 1
           fi
-          sleep 2
-        done
+          echo "schema.sql content:"
+          cat schema.sql
 
-    - name: Create all required tables
-      run: |
-        cat <<EOF > schema_facture.sql
-        CREATE TABLE IF NOT EXISTS users (
-          id INT AUTO_INCREMENT PRIMARY KEY,
-          name VARCHAR(255) NOT NULL,
-          email VARCHAR(255) NOT NULL
-        );
+      - name: Wait for MySQL to be ready
+        run: |
+          for i in {1..30}; do
+            if mysql -h 127.0.0.1 -u root -proot -e "SELECT 1" > /dev/null 2>&1; then
+              echo " MySQL is up!"
+              break
+            fi
+            echo "Waiting for MySQL..."
+            sleep 2
+          done
 
-        CREATE TABLE IF NOT EXISTS factures (
-          id INT AUTO_INCREMENT PRIMARY KEY,
-          user_id INT NOT NULL,
-          total DECIMAL(10,2) NOT NULL,
-          FOREIGN KEY (user_id) REFERENCES users(id)
-        );
+      - name: Initialize database for lignefacture
+        run: |
+            mysql -h 127.0.0.1 -u root -proot devops_db < schema.sql
 
-        CREATE TABLE IF NOT EXISTS article (
-          id INT AUTO_INCREMENT PRIMARY KEY,
-          nom VARCHAR(255) NOT NULL,
-          prix DECIMAL(10,2) NOT NULL
-        );
+            mysql -h 127.0.0.1 -u root -proot devops_db -e "SHOW TABLES;" | grep article || { echo "Error: article table not found"; exit 1; }
+            mysql -h 127.0.0.1 -u root -proot devops_db -e "SHOW TABLES;" | grep users || { echo "Error: users table not found"; exit 1; }
+            mysql -h 127.0.0.1 -u root -proot devops_db -e "SHOW TABLES;" | grep factures || { echo "Error: factures table not found"; exit 1; }
+            mysql -h 127.0.0.1 -u root -proot devops_db -e "SHOW TABLES;" | grep lignefacture || { echo "Error: lignefacture table not found"; exit 1; }
 
-        CREATE TABLE IF NOT EXISTS lignefacture (
-          id INT AUTO_INCREMENT PRIMARY KEY,
-          facture_id INT NOT NULL,
-          article_id INT NOT NULL,
-          quantite INT NOT NULL,
-          FOREIGN KEY (facture_id) REFERENCES factures(id),
-          FOREIGN KEY (article_id) REFERENCES article(id)
-        );
-        EOF
 
-        mysql -h 127.0.0.1 -P 3306 -u root -proot devops_java < schema_facture.sql
-
-    - name: Insert data for tests
-      run: |
-        cat <<EOF > insert_data.sql
-        INSERT INTO users (id, name, email) VALUES (1, 'Jamila Dahi', 'jda@gk.mt');
-        INSERT INTO factures (id, user_id, total) VALUES (1, 1, 100.00);
-        INSERT INTO article (id, nom, prix) VALUES (1, 'Stylo', 10.00);
-        EOF
-
-        mysql -h 127.0.0.1 -P 3306 -u root -proot devops_java < insert_data.sql
-
-    - name: Build with Maven
-      run: mvn -B package --file pom.xml
-
-    - name: Run DAO tests for Facture and LigneFacture
-      run: mvn -B test -Dtest=LigneFactureDAOTest
-      env:
-        DB_URL: jdbc:mysql://localhost:3306/devops_java
-        DB_USER: root
-        DB_PASSWORD: root
+      - name: Build and test only lignefacture classes
+        run: mvn --batch-mode clean test -Dtest=LigneFactureDAOTest
+        env:
+          DB_URL: jdbc:mysql://127.0.0.1:3306/devops_db?useSSL=false&serverTimezone=UTC
+          DB_USER: root
+          DB_PASSWORD: root

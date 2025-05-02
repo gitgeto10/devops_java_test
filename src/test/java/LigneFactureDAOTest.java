@@ -27,7 +27,7 @@ public class LigneFactureDAOTest {
 
     @Test
     public void testInsertLigneFacture() throws Exception {
-        lignefacture lf = new lignefacture(1L, 1L, 3, 300.0);  // Exemple d'une ligne de facture
+        lignefacture lf = new lignefacture(1, 1, 3, 300.0);  
         int id = lignefactureDAO.insert(lf);
         Assertions.assertTrue(id > 0, "Insert ID should be greater than 0");
     }
