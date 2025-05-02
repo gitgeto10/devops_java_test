@@ -47,5 +47,5 @@ INSERT INTO users (name, email) VALUES ('Jamila Dahi', 'jda@gk.mt');
 
 INSERT INTO factures (id,user_id ,total) VALUES (1,1, 1000.0);
 
-INSERT INTO lignefacture (id, id_facture, quantite, prix_unitaire) VALUES (1, 1, 3, 300.0);
+INSERT INTO lignefacture (id, id_facture,id_article, quantity, sub_total) VALUES (1,1, 1, 3, 300.0);
 
