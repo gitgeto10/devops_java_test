@@ -17,7 +17,7 @@ jobs:
           MYSQL_ROOT_PASSWORD: 123456789yassmine
           MYSQL_DATABASE: devops_db
         options: >-
-          --health-cmd="mysqladmin ping -h 127.0.0.1 -p123456789yassmine"
+          --health-cmd="mysqladmin ping -h localhost -p123456789yassmine"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
@@ -38,7 +38,7 @@ jobs:
     - name: Wait for MySQL to be ready
       run: |
         for i in {1..30}; do
-          if mysqladmin ping -h 127.0.0.1 -p123456789yassmine --silent; then
+          if mysqladmin ping -h mysql -p123456789yassmine --silent; then
             echo "MySQL is ready!"
             break
           fi
@@ -48,7 +48,7 @@ jobs:
 
     - name: Create tables from schema
       run: |
-        mysql -h 127.0.0.1 -P 3306 -u root -p123456789yassmine devops_db < schema_panier.sql
+        mysql -h mysql -P 3306 -u root -p123456789yassmine devops_db < schema_panier.sql
 
     - name: Build with Maven
       run: mvn -B package --file pom.xml
