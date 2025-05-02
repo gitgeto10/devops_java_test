@@ -2,9 +2,9 @@ name: Java CI with Maven and MySQL
 
 on:
   push:
-    branches: [ "panier" ]
+    branches: [ "panier" ]  # Changer "main" en "panier"
   pull_request:
-    branches: [ "panier" ]
+    branches: [ "panier" ]  # Changer "main" en "panier"
 
 jobs:
   build:
@@ -16,8 +16,6 @@ jobs:
         env:
           MYSQL_ROOT_PASSWORD: 123456789yassmine
           MYSQL_DATABASE: devops_db
-          MYSQL_USER: root
-          MYSQL_PASSWORD: 123456789yassmine
         ports:
           - 3306:3306
         options: >-
