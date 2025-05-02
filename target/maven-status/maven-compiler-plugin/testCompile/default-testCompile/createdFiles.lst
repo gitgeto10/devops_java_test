@@ -1,0 +1,3 @@
+com\mycompany\maven_tests\DatabaseTest.class
+com\mycompany\maven_tests\PanierDAOTest.class
+com\mycompany\maven_tests\UserDAOTest.class

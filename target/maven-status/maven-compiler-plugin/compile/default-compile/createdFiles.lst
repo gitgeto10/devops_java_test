@@ -1,3 +1,7 @@
+com\mycompany\maven_tests\model\Panier.class
+com\mycompany\testjava\TestJava.class
+com\mycompany\maven_tests\dao\PanierDAO.class
 com\mycompany\maven_tests\Maven_tests.class
+com\mycompany\maven_tests\util\Database.class
 com\mycompany\maven_tests\dao\UserDAO.class
 com\mycompany\maven_tests\model\User.class
