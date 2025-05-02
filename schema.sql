@@ -7,6 +7,15 @@
  * Created: 30 avr. 2025
  */
 
+-- Création de la table article
+CREATE TABLE IF NOT EXISTS article (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    ref VARCHAR(50) NOT NULL,
+    nom VARCHAR(255) NOT NULL,
+    prixUnitaire DECIMAL(10,2) NOT NULL,
+    qte INT NOT NULL
+);
+
 -- Création de la table users
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -33,6 +42,5 @@ CREATE TABLE IF NOT EXISTS lignefacture (
     FOREIGN KEY (id_article) REFERENCES article(id)
 );
 
--- Ajout d'un utilisateur d'exemple
+-- Insérer un utilisateur pour test
 INSERT INTO users (name, email) VALUES ('Jamila Dahi', 'jda@gk.mt');
-
