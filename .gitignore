@@ -1,0 +1,31 @@
+# Fichiers compilés
+*.class
+
+# Dossier de sortie NetBeans
+/build/
+*/build/
+
+# Répertoire Maven
+/target/
+
+# Configuration d’environnement
+*.log
+*.swp
+*.tmp
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+
+# NetBeans
+nbproject/private/
+build/
+dist/
+nbbuild/
+nball/
+nbdist/
+.nb-gradle/
+
+
+# Fichiers de test générés
+/test-output/
