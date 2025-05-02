@@ -1,51 +1,52 @@
-name: Java CI with Maven - Panier Tests
+name: Java CI with Maven and MySQL
 
 on:
   push:
-    branches: [ panier ]
+    branches: [ "panier" ]
   pull_request:
-    branches: [ panier ]
+    branches: [ "panier" ]
 
 jobs:
-  build-test:
+  build-and-test:
     runs-on: ubuntu-latest
-
     services:
       mysql:
         image: mysql:8.0
         env:
-          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_ROOT_PASSWORD: 123456789yassmine
           MYSQL_DATABASE: devops_db
         ports:
           - 3306:3306
-        options: --health-cmd="mysqladmin ping --silent" --health-interval=10s --health-timeout=5s --health-retries=5
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -p$MYSQL_ROOT_PASSWORD"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v3
-      with:
-        java-version: '17'
-        distribution: 'temurin'
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
 
-    run: |
-        echo "Waiting for MySQL to be ready..."
-        sleep 30
+      - name: Wait for MySQL to be healthy
+        run: |
+          for i in {1..30}; do
+            nc -z 127.0.0.1 3306 && echo "MySQL is up!" && break
+            echo "Waiting for MySQL..." && sleep 2
+          done
 
-    - name: Create schema
-      run: |
-        mysql -h 127.0.0.1 -P 3306 -u root devops_db < schema_panier.sql
+      - name: Create tables
+        run: |
+          sudo apt-get install -y mysql-client
+          mysql -h 127.0.0.1 -P 3306 -u root -ppassword db_users <schema_panier.sql
 
-    - name: Build with Maven
-      run: mvn -B package --file pom.xml
-      
+      - name: Build with Maven
+        run: mvn clean install
 
-    - name: Run tests
-      run: mvn test
-      env:
-        DB_URL: jdbc:mysql://localhost:3306/devops_db
-        DB_USER: root
-        DB_PASS: "123456789yassmine"
-
+      - name: Run tests
+        run: mvn test
