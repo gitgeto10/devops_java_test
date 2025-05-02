@@ -7,7 +7,7 @@
  * Created: 30 avr. 2025
  */
 
-CREATE TABLE IF NOT EXISTS users (
+CREATE TABLE IF NOT EXISTS db_users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL

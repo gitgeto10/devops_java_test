@@ -49,8 +49,8 @@ public class PanierDAOTest {
             assertTrue(rs.next(), "Le panier inséré doit être présent dans la base de données");
 
             // Vérifier les valeurs de la ligne insérée
-            assertEquals("ART001", rs.getString("article_code"));
-            assertEquals("ASMAA", rs.getString("client_name"));
+            assertEquals("ART001", rs.getString("n_article"));
+            assertEquals("ASMAA", rs.getString("client"));
         }
     }
 
