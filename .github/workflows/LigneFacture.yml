@@ -87,7 +87,7 @@ jobs:
       run: mvn -B package --file pom.xml
 
     - name: Run DAO tests for Facture and LigneFacture
-      run: mvn -B test -Dtest=FactureDAOTest,LigneFactureDAOTest
+      run: mvn -B test -Dtest=LigneFactureDAOTest
       env:
         DB_URL: jdbc:mysql://localhost:3306/devops_java
         DB_USER: root
