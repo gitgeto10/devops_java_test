@@ -1,0 +1,67 @@
+name: Java CI with Maven
+
+on:
+  push:
+    branches:
+      - main
+      - Article
+      - 'feature/**'
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: 1234
+          MYSQL_DATABASE: devops_db
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Verify schema.sql exists
+        run: |
+          if [ ! -f schema.sql ]; then
+            echo "Error: schema.sql not found in repository root"
+            exit 1
+          fi
+          echo "schema.sql content:"
+          cat schema.sql
+
+      - name: Initialize database schema
+        run: |
+          mysql -h 127.0.0.1 -u root -p1234 devops_db < schema.sql
+          if [ $? -ne 0 ]; then
+            echo "Error: Failed to initialize database schema"
+            exit 1
+          fi
+          # Verify tables were created
+          mysql -h 127.0.0.1 -u root -p1234 devops_db -e "SHOW TABLES;" | grep article || { echo "Error: article table not found"; exit 1; }
+          mysql -h 127.0.0.1 -u root -p1234 devops_db -e "SHOW TABLES;" | grep users || { echo "Error: users table not found"; exit 1; }
+
+      - name: Build and test with Maven
+        run: mvn --batch-mode clean test
+        env:
+          DB_URL: jdbc:mysql://127.0.0.1:3306/devops_db?useSSL=false&serverTimezone=UTC
+          DB_USER: root
+          DB_PASSWORD: 1234
