@@ -43,7 +43,7 @@ jobs:
       - name: Create tables
         run: |
           sudo apt-get install -y mysql-client
-          mysql -h 127.0.0.1 -P 3306 -u root -ppassword db_users <schema_panier.sql
+          mysql -h 127.0.0.1 -P 3306 -u root -ppassword devops_db <schema_panier.sql
 
       - name: Build with Maven
         run: mvn clean install
