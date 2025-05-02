@@ -21,7 +21,7 @@ public class UserDAO {
 
     public List<User> findAll() throws SQLException {
         List<User> users = new ArrayList<>();
-        String query = "SELECT * FROM users";
+        String query = "SELECT * FROM db_users";
         try (Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
 
