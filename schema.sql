@@ -16,12 +16,21 @@ CREATE TABLE IF NOT EXISTS article (
     qte INT NOT NULL
 );
 
+-- Insérer des articles pour test
+INSERT INTO article (ref, nom, prixUnitaire, qte) 
+VALUES 
+('A001', 'Article 1', 100.00, 10), 
+('A002', 'Article 2', 150.00, 20);
+
 -- Création de la table users
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL
 );
+
+-- Insérer un utilisateur pour test
+INSERT INTO users (name, email) VALUES ('Jamila Dahi', 'jda@gk.mt');
 
 -- Création de la table factures
 CREATE TABLE IF NOT EXISTS factures (
@@ -30,6 +39,9 @@ CREATE TABLE IF NOT EXISTS factures (
     total DECIMAL(10,2) NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
+
+-- Insérer une facture pour test
+INSERT INTO factures (id, user_id, total) VALUES (1, 1, 1000.0);
 
 -- Création de la table lignefacture
 CREATE TABLE IF NOT EXISTS lignefacture (
@@ -42,10 +54,6 @@ CREATE TABLE IF NOT EXISTS lignefacture (
     FOREIGN KEY (id_article) REFERENCES article(id)
 );
 
--- Insérer un utilisateur pour test
-INSERT INTO users (name, email) VALUES ('Jamila Dahi', 'jda@gk.mt');
-
-INSERT INTO factures (id,user_id ,total) VALUES (1,1, 1000.0);
-
-INSERT INTO lignefacture (id, id_facture,id_article, quantity, sub_total) VALUES (1,1, 1, 3, 300.0);
-
+-- Insérer une ligne de facture pour test
+INSERT INTO lignefacture (id, id_facture, id_article, quantity, sub_total) 
+VALUES (1, 1, 1, 3, 300.0);
