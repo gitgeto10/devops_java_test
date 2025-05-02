@@ -7,7 +7,6 @@
  * Created: 30 avr. 2025
  */
 
--- Table des utilisateurs (users)
 -- Création de la table article
 CREATE TABLE IF NOT EXISTS article (
     id INT AUTO_INCREMENT PRIMARY KEY,

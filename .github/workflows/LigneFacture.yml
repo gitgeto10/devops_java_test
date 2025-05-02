@@ -57,6 +57,7 @@ jobs:
             sleep 2
           done
 
+      
       - name: Initialize database for lignefacture
         run: |
             mysql -h 127.0.0.1 -u root -proot devops_db < schema.sql
