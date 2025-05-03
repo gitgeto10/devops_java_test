@@ -2,9 +2,9 @@ name: Java CI with Maven and MySQL
 
 on:
   push:
-    branches: [ "panier" ]  # Changer "main" en "panier"
+    branches: [ "panier" ]
   pull_request:
-    branches: [ "panier" ]  # Changer "main" en "panier"
+    branches: [ "panier" ]
 
 jobs:
   build:
@@ -39,7 +39,7 @@ jobs:
 
     - name: Wait for MySQL to be ready
       run: |
-        for i in {1..60}; do  # Augmenter à 60 secondes
+        for i in {1..60}; do
           if mysqladmin ping -h 127.0.0.1 -p123456789yassmine --silent; then
             echo "MySQL is ready!"
             break
@@ -50,7 +50,7 @@ jobs:
 
     - name: Create tables from schema
       run: |
-        mysql -h 127.0.0.1 -P 3306 -u root -p123456789yassmine devops_db < schema_panier.sql
+        mysql -h 127.0.0.1 -P 3306 -u root -p123456789yassmine devops_db < sql/schema_panier.sql
 
     - name: Check if tables are created
       run: |
@@ -61,3 +61,7 @@ jobs:
 
     - name: Run PanierDAOTest
       run: mvn -X -Dtest=PanierDAOTest test
+      env:
+        DB_URL: jdbc:mysql://localhost:3306/devops_db
+        DB_USER: root
+        DB_PASS: 123456789yassmine
