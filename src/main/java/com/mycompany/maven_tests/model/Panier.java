@@ -4,24 +4,44 @@
  */
 package com.mycompany.maven_tests.model;
 
-
 public class Panier {
     private int id;
-    private String nArticle;
+    private String article;
     private String client;
 
-    public Panier(int id, String nArticle, String client) {
-        this.id = id;
-        this.nArticle = nArticle;
+    public Panier(String article, String client) {
+        this.article = article;
         this.client = client;
     }
 
-    public int getId() { return id; }
-    public String getArticle() { return nArticle; }
-    public String getClient() { return client; }
+    public Panier(int id, String article, String client) {
+        this.id = id;
+        this.article = article;
+        this.client = client;
+    }
 
-    public void setId(int id) { this.id = id; }
-    public void setNArticle(String nArticle) { this.nArticle = nArticle; }
-    public void setClient(String client) { this.client = client; }
+    public int getId() {
+        return id;
+    }
+
+    public String getArticle() {
+        return article;
+    }
+
+    public String getClient() {
+        return client;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public void setArticle(String article) {
+        this.article = article;
+    }
+
+    public void setClient(String client) {
+        this.client = client;
+    }
 }
 
