@@ -46,8 +46,8 @@ jobs:
     - name: Build with Maven
       run: mvn -B package --file pom.xml
       
-    - name: Run UserDAOTest.java
-      run: mvn -B test -Dtest=UserDAOTest
+    - name: Run LigneBonLivraisonDAOTest.java
+      run: mvn -B test -Dtest=LigneBonLivraisonDAOTest
 
     - name: Run tests
       run: mvn test

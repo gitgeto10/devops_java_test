@@ -12,3 +12,15 @@ CREATE TABLE IF NOT EXISTS users (
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL
 );
+CREATE TABLE IF NOT EXISTS lignebonlivraison (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_bonlivraison INT NOT NULL,
+    designation VARCHAR(255) NOT NULL,
+    quantity INT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS bonlivraison (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    status VARCHAR(50) NOT NULL,
+    delivery_date DATE NOT NULL
+);
