@@ -51,6 +51,8 @@ jobs:
     - name: Create tables from schema
       run: |
         mysql -h 127.0.0.1 -P 3306 -u root -p123456789yassmine devops_db < sql/schema_panier.sql
+        mysql -h 127.0.0.1 -P 3306 -u root -p123456789yassmine devops_db < sql/schema.sql
+
 
     - name: Check if tables are created
       run: |
