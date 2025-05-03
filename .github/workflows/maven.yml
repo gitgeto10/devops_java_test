@@ -2,7 +2,7 @@ name: Java CI with Maven and MySQL
 
 on:
   push:
-    branches: [ main ]
+    branches: [ LigneBonLivraison ]
   pull_request:
     branches: [ main ]
 
